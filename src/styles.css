@@ -340,6 +340,29 @@ body {
   margin-top: 0.5rem;
 }
 
+.play-again-btn {
+  margin-top: 1.1rem;
+  padding: 0.55rem 1.75rem;
+  background: rgba(127, 255, 212, 0.08);
+  border: 1px solid rgba(127, 255, 212, 0.35);
+  border-radius: 8px;
+  color: #7fffd4;
+  font-size: 0.88rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s, transform 0.1s;
+}
+
+.play-again-btn:hover {
+  background: rgba(127, 255, 212, 0.18);
+  border-color: rgba(127, 255, 212, 0.6);
+}
+
+.play-again-btn:active {
+  transform: scale(0.97);
+}
+
 @keyframes fadeUp {
   from { opacity: 0; transform: translateY(10px); }
   to   { opacity: 1; transform: translateY(0); }

@@ -146,6 +146,18 @@ export default function MastermindApp() {
     }
   }
 
+  function handlePlayAgain() {
+    const newCode = generateRandomCode();
+    localStorage.setItem("winningCode", JSON.stringify(newCode));
+    setWinningCode(newCode);
+    setGuesses([]);
+    setUserChoices([]);
+    setLives(MAX_LIVES);
+    setWin(false);
+    setLost(false);
+    setTimeLeft(getSecondsUntilMidnight());
+  }
+
   const gameOver = win || lost;
 
   return (
@@ -276,7 +288,7 @@ export default function MastermindApp() {
         </div>
       )}
 
-      <Alert win={win} lost={lost} timeLeft={timeLeft} winningCode={winningCode} />
+      <Alert win={win} lost={lost} timeLeft={timeLeft} winningCode={winningCode} onPlayAgain={handlePlayAgain} />
     </div>
   );
 }

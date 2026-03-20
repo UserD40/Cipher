@@ -8,7 +8,7 @@ function formatTime(totalSeconds) {
   return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}:${String(sec).padStart(2, "0")}`;
 }
 
-const Alert = ({ win, lost, timeLeft, winningCode }) => {
+const Alert = ({ win, lost, timeLeft, winningCode, onPlayAgain }) => {
   if (!win && !lost) return null;
 
   return (
@@ -38,6 +38,9 @@ const Alert = ({ win, lost, timeLeft, winningCode }) => {
           </p>
         </>
       )}
+      <button className="play-again-btn" onClick={onPlayAgain}>
+        Play Again
+      </button>
     </div>
   );
 };
