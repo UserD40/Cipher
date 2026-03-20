@@ -1,70 +1,58 @@
-# Getting Started with Create React App
+# Cipher
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+A daily Mastermind-style code-breaking puzzle built with React. One puzzle per day — crack the hidden 4-colour code before your guesses run out.
 
-## Available Scripts
+## How It Works
 
-In the project directory, you can run:
+A random sequence of 4 colours is generated each day and stored locally. You have **10 attempts** to guess it. After each guess you receive colour-coded feedback:
 
-### `npm start`
+| Symbol | Meaning |
+|--------|---------|
+| ✔ Green | Correct colour, correct position |
+| ❗ Orange | Correct colour, wrong position |
+| · | Colour not in the code |
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+Colours can repeat. A new puzzle is generated automatically at midnight.
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+## Features
 
-### `npm test`
+- Daily puzzle that resets at midnight (persisted via `localStorage`)
+- Accurate feedback algorithm handling duplicate colours correctly
+- 10-guess limit displayed as a live dot tracker
+- Toggleable rules panel for new players
+- Empty slot placeholders so you always know how many colours you've picked
+- Disabled controls and clean game-over state
+- Countdown timer to the next puzzle on win or loss
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+## Tech Stack
 
-### `npm run build`
+- **React 18** — hooks-based state management (`useState`, `useEffect`)
+- **SweetAlert** — win/loss notifications
+- **Custom CSS** — no UI framework; dark gradient theme with CSS animations
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+## Getting Started
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+```bash
+npm install
+npm start
+```
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-### `npm run eject`
+## Project Structure
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+```
+src/
+├── MastermindApp.js   # Game logic and UI
+├── Alert.js           # Post-game countdown display
+├── styles.css         # All styling
+└── index.js           # React entry point
+```
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+## Build for Production
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+```bash
+npm run build
+```
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+Outputs an optimised static bundle to `/build`, ready to deploy on any static host (Netlify, Vercel, GitHub Pages, etc.).

@@ -1,24 +1,201 @@
 body {
-	height: 100vh;
-	overflow: hidden;
-width: 100%;
-	align-items: center;
-	justify-content: center;
-	background-color: #1b2845;
-	background-image: linear-gradient(315deg, #1b2845 0%, #274060 74%);
-color: aqua;
-font-family: Cambria, Cochin, Georgia, Times, 'Times New Roman', serif;
+  min-height: 100vh;
+  width: 100%;
+  background-color: #1b2845;
+  background-image: linear-gradient(315deg, #1b2845 0%, #274060 74%);
+  color: aqua;
+  font-family: Cambria, Cochin, Georgia, Times, 'Times New Roman', serif;
+  margin: 0;
 }
 
+.app {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  padding: 1.5rem 1rem;
+  box-sizing: border-box;
+}
+
+/* ── Header ── */
+.game-header {
+  text-align: center;
+  margin-bottom: 1.25rem;
+}
+
+.game-title {
+  font-size: 2.5rem;
+  letter-spacing: 0.35em;
+  margin: 0;
+  color: #7fffd4;
+  text-transform: uppercase;
+}
+
+.game-subtitle {
+  font-size: 0.8rem;
+  opacity: 0.65;
+  margin: 0.25rem 0 0.9rem;
+  letter-spacing: 0.18em;
+}
+
+.instructions-toggle {
+  background: transparent;
+  border: 1px solid aqua;
+  color: aqua;
+  padding: 0.35rem 1rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.78rem;
+  letter-spacing: 0.1em;
+  transition: background 0.2s;
+}
+
+.instructions-toggle:hover {
+  background: rgba(0, 255, 255, 0.1);
+}
+
+/* ── Instructions panel ── */
+.instructions {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(0, 255, 255, 0.25);
+  border-radius: 8px;
+  padding: 0.9rem 1.4rem;
+  margin-bottom: 1.1rem;
+  max-width: 420px;
+  width: 100%;
+  font-size: 0.88rem;
+  line-height: 1.75;
+  box-sizing: border-box;
+}
+
+.instructions p {
+  margin: 0.2rem 0;
+}
+
+.green-text  { color: #4caf50; font-weight: bold; }
+.orange-text { color: #ff9800; font-weight: bold; }
+
+/* ── Lives display ── */
+.lives-display {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin-bottom: 1rem;
+}
+
+.life-dot {
+  display: inline-block;
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+}
+
+.life-active { background-color: #4caf50; }
+.life-lost   { background-color: rgba(255, 255, 255, 0.12); }
+
+.lives-text {
+  font-size: 0.78rem;
+  opacity: 0.7;
+  margin-left: 6px;
+}
+
+/* ── Guess history table ── */
 table {
   border-collapse: collapse;
   width: 100%;
+  max-width: 520px;
+  margin-bottom: 0.5rem;
 }
-th,
-td {
 
+th, td {
   text-align: left;
-  padding: 8px;
+  padding: 5px 10px;
+}
+
+th {
+  font-size: 0.72rem;
+  letter-spacing: 0.1em;
+  opacity: 0.55;
+  text-transform: uppercase;
+}
+
+.guess-cell,
+.feedback-cell {
+  display: flex;
+  align-items: center;
+}
+
+/* ── Color circles ── */
+.color-circle {
+  display: inline-block;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  margin: 3px;
+  border: 2px solid rgba(255, 255, 255, 0.12);
+}
+
+.color-empty {
+  background-color: rgba(255, 255, 255, 0.07);
+}
+
+.red    { background-color: #e53935; }
+.blue   { background-color: #1e88e5; }
+.green  { background-color: #43a047; }
+.yellow { background-color: #fdd835; }
+.purple { background-color: #8e24aa; }
+
+/* ── Feedback icons ── */
+.feedback-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  font-size: 0.85rem;
+  margin: 2px;
+}
+
+/* ── Current guess slots ── */
+.selected-colors-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.75rem;
+  min-height: 56px;
+}
+
+/* ── Color picker ── */
+.color-selector {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 0.5rem 0.75rem;
+}
+
+.color-selector button {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  transition: transform 0.15s;
+}
+
+.color-selector button:hover {
+  transform: scale(1.15);
+}
+
+/* ── Action buttons ── */
+.guess-section {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  max-width: 400px;
+  gap: 1rem;
+  margin-bottom: 1rem;
 }
 
 button {
@@ -27,167 +204,25 @@ button {
   outline: none;
   color: aqua;
 }
-.fade-out {
-  opacity: 0;
-}
-
-.container {
-  display: flex;
-  flex-direction: column;
-}
-
-.app {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  width: 100%;
-}
-
-.color-selector {
-  padding: 2rem;
-  width: 100%;
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: center;
-}
-
-.color-circle {
-  display: inline-block;
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  margin: 4px;
-}
-.red {
-  background-color: red;
-}
-
-.blue {
-  background-color: blue;
-}
-
-.green {
-  background-color: green;
-}
-
-.yellow {
-  background-color: yellow;
-}
-
-.purple {
-  background-color: purple;
-}
-
-.guess-section {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: center;
-  margin: 20px;
-  flex-direction: row;
-  width: 100%;
-}
-
-.selected-colors-container {
-  padding: 2rem;
-  width: 100%;
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: center;
-}
-
-
-.guess-container {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: center;
-}
-
-.guess-colors {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: center;
-}
-
-.feedback-section {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: center;
-  margin: 20px;
-}
-
-.feedback-container {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: center;
-}
-
-.submit-button {
-  width: 45%;
-  height: 30px;
-  margin: 10px;
-  background-color: gray;
-  color: white;
-  display: inline;
-}
-
-.back-button {
-  width: 45%;
-  height: 30px;
-  margin: 10px;
-  background-color: gray;
-  color: white;
-  display: inline;
-}
-.turns-section {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin: 20px;
-}
-
-.turns-container {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.game-over {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin: 20px;
-}
-
-.game-over-container {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-
-
-
-
 
 .btn-one {
-  color: #FFF;
+  color: #fff;
   transition: all 0.3s;
   position: relative;
-  width:40%;
-  height:40px;
-  margin: 1rem;
+  width: 40%;
+  height: 40px;
+  cursor: pointer;
 }
+
+.btn-one:disabled {
+  opacity: 0.3;
+  cursor: default;
+}
+
 .btn-one span {
   transition: all 0.3s;
 }
+
 .btn-one::before {
   content: '';
   position: absolute;
@@ -198,21 +233,20 @@ button {
   z-index: 1;
   opacity: 0;
   transition: all 0.3s;
-  border-top-width: 1px;
-  border-bottom-width: 1px;
-  border-top-style: solid;
-  border-bottom-style: solid;
-  border-top-color: rgba(255,255,255,0.5);
-  border-bottom-color: rgba(255,255,255,0.5);
+  border-top: 1px solid rgba(255, 255, 255, 0.5);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.5);
   transform: scale(0.1, 1);
 }
-.btn-one:hover span {
+
+.btn-one:not(:disabled):hover span {
   letter-spacing: 2px;
 }
-.btn-one:hover::before {
-  opacity: 1; 
-  transform: scale(1, 1); 
+
+.btn-one:not(:disabled):hover::before {
+  opacity: 1;
+  transform: scale(1, 1);
 }
+
 .btn-one::after {
   content: '';
   position: absolute;
@@ -222,9 +256,37 @@ button {
   height: 100%;
   z-index: 1;
   transition: all 0.3s;
-  background-color: rgba(255,255,255,0.1);
+  background-color: rgba(255, 255, 255, 0.1);
 }
-.btn-one:hover::after {
-  opacity: 0; 
+
+.btn-one:not(:disabled):hover::after {
+  opacity: 0;
   transform: scale(0.1, 1);
+}
+
+/* ── End-of-game message ── */
+.end-message {
+  margin-top: 1.75rem;
+  text-align: center;
+  animation: fadeIn 0.5s ease-in;
+}
+
+.end-title {
+  font-size: 1.4rem;
+  font-weight: bold;
+  margin: 0 0 0.3rem;
+}
+
+.win-title  { color: #4caf50; }
+.loss-title { color: #ef5350; }
+
+.end-subtitle {
+  font-size: 0.9rem;
+  opacity: 0.8;
+  margin: 0;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
 }

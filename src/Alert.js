@@ -1,43 +1,34 @@
-import React, { useEffect, useState } from "react";
-import swal from "sweetalert";
+import React from "react";
+
+function formatTime(totalSeconds) {
+  const h = Math.floor(totalSeconds / 3600);
+  const m = Math.floor((totalSeconds % 3600) / 60);
+  const s = totalSeconds % 60;
+  return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
+}
 
 const Alert = ({ win, lost, timeLeft }) => {
-  const [remainingTime, setRemainingTime] = useState(timeLeft);
+  if (!win && !lost) return null;
 
-  useEffect(() => {
-    let intervalId;
-    if (win) {
-      intervalId = setInterval(() => {
-        setRemainingTime(remainingTime - 1000);
-        if (remainingTime <= 0) {
-          clearInterval(intervalId);
-        }
-      }, 1000);
-    } else if (lost) {
-      setTimeout(() => {
-        swal({
-          title: "You ran out of lives. Better luck next time!",
-          icon: "error",
-          button: "OK"
-        });
-      }, 100);
-    }
-    return () => clearInterval(intervalId);
-  }, [win, lost, remainingTime]);
-
-  if (win) {
-    const remainingTimeInSeconds = remainingTime / 1000;
-    const hours = Math.floor(remainingTimeInSeconds / 3600);
-    const minutes = Math.floor((remainingTimeInSeconds % 3600) / 60);
-    const seconds = Math.floor(remainingTimeInSeconds % 60);
-
-    return (
-      <div>
-        Come back in {hours} hours {minutes} minutes : {seconds} seconds to try again!
-      </div>
-    );
-  } else {
-    return null;
-  }
+  return (
+    <div className="end-message">
+      {win ? (
+        <>
+          <p className="end-title win-title">You cracked the code!</p>
+          <p className="end-subtitle">
+            Next puzzle in: <strong>{formatTime(timeLeft)}</strong>
+          </p>
+        </>
+      ) : (
+        <>
+          <p className="end-title loss-title">Out of guesses!</p>
+          <p className="end-subtitle">
+            Next puzzle in: <strong>{formatTime(timeLeft)}</strong>
+          </p>
+        </>
+      )}
+    </div>
+  );
 };
+
 export default Alert;
