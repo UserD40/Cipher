@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import swal from "sweetalert";
 import Alert from "./Alert";
 import "./styles.css";
@@ -15,7 +15,12 @@ function generateRandomCode() {
 
 function getOrGenerateCode() {
   const stored = localStorage.getItem("winningCode");
-  if (stored) return JSON.parse(stored);
+  if (stored) {
+    const parsed = JSON.parse(stored);
+    if (Array.isArray(parsed) && parsed.length === 4 && parsed[0]?.color) {
+      return parsed;
+    }
+  }
   const code = generateRandomCode();
   localStorage.setItem("winningCode", JSON.stringify(code));
   return code;
@@ -32,6 +37,8 @@ function getSecondsUntilMidnight() {
 
 export default function MastermindApp() {
   const [winningCode, setWinningCode] = useState(() => getOrGenerateCode());
+  const winningCodeRef = useRef(winningCode);
+
   const [guesses, setGuesses] = useState([]);
   const [userChoices, setUserChoices] = useState([]);
   const [win, setWin] = useState(false);
@@ -40,19 +47,22 @@ export default function MastermindApp() {
   const [timeLeft, setTimeLeft] = useState(getSecondsUntilMidnight);
   const [showInstructions, setShowInstructions] = useState(false);
 
-  // Countdown timer — only runs while the game is still active
+  // Keep ref in sync so checkGuess never reads stale state
+  useEffect(() => {
+    winningCodeRef.current = winningCode;
+  }, [winningCode]);
+
+  // Countdown — only while game is active
   useEffect(() => {
     if (win || lost) return;
-    const intervalId = setInterval(() => {
-      setTimeLeft((prev) => Math.max(0, prev - 1));
-    }, 1000);
-    return () => clearInterval(intervalId);
+    const id = setInterval(() => setTimeLeft((prev) => Math.max(0, prev - 1)), 1000);
+    return () => clearInterval(id);
   }, [win, lost]);
 
-  // Reset puzzle at midnight
+  // Reset at midnight
   useEffect(() => {
-    const msUntilMidnight = getMidnight() - new Date();
-    const timerId = setTimeout(() => {
+    const ms = getMidnight() - new Date();
+    const id = setTimeout(() => {
       const newCode = generateRandomCode();
       localStorage.setItem("winningCode", JSON.stringify(newCode));
       setWinningCode(newCode);
@@ -61,62 +71,58 @@ export default function MastermindApp() {
       setWin(false);
       setLost(false);
       setTimeLeft(getSecondsUntilMidnight());
-    }, msUntilMidnight);
-    return () => clearTimeout(timerId);
+    }, ms);
+    return () => clearTimeout(id);
   }, []);
 
+  // Positional feedback — no sorting
   function checkGuess(guess) {
-    const feedbackColors = Array(4).fill(null);
+    const code = winningCodeRef.current;
+    const feedback = Array(4).fill(null);
     const codeColorCounts = {};
     const guessColorCounts = {};
 
     // First pass: exact matches (green)
     for (let i = 0; i < 4; i++) {
-      if (guess[i].color === winningCode[i].color) {
-        feedbackColors[i] = "green";
+      if (guess[i].color === code[i].color) {
+        feedback[i] = "green";
       } else {
-        codeColorCounts[winningCode[i].color] = (codeColorCounts[winningCode[i].color] || 0) + 1;
+        codeColorCounts[code[i].color] = (codeColorCounts[code[i].color] || 0) + 1;
         guessColorCounts[guess[i].color] = (guessColorCounts[guess[i].color] || 0) + 1;
       }
     }
 
-    // Second pass: wrong-position color matches (orange)
-    const orangesAvailable = {};
+    // Second pass: wrong-position matches (orange)
+    const orangesLeft = {};
     for (const color of Object.keys(guessColorCounts)) {
-      orangesAvailable[color] = Math.min(
-        guessColorCounts[color],
-        codeColorCounts[color] || 0
-      );
+      orangesLeft[color] = Math.min(guessColorCounts[color], codeColorCounts[color] || 0);
     }
 
     for (let i = 0; i < 4; i++) {
-      if (feedbackColors[i] === null) {
+      if (feedback[i] === null) {
         const color = guess[i].color;
-        if (orangesAvailable[color] > 0) {
-          feedbackColors[i] = "orange";
-          orangesAvailable[color]--;
+        if (orangesLeft[color] > 0) {
+          feedback[i] = "orange";
+          orangesLeft[color]--;
         } else {
-          feedbackColors[i] = "";
+          feedback[i] = "miss";
         }
       }
     }
 
-    // Sort: greens first, then oranges, then empties
-    feedbackColors.sort((a, b) => {
-      const order = { green: 0, orange: 1, "": 2 };
-      return order[a] - order[b];
-    });
-
-    return feedbackColors;
+    return feedback;
   }
 
   function handleColorClick(color) {
     if (userChoices.length >= 4 || win || lost) return;
-    setUserChoices([...userChoices, { color, position: userChoices.length, id: Date.now() }]);
+    setUserChoices((prev) => [
+      ...prev,
+      { color, position: prev.length, id: Date.now() },
+    ]);
   }
 
   function handleBack() {
-    setUserChoices(userChoices.slice(0, -1));
+    setUserChoices((prev) => prev.slice(0, -1));
   }
 
   function handleSubmit() {
@@ -124,7 +130,7 @@ export default function MastermindApp() {
 
     const guess = userChoices;
     const feedback = checkGuess(guess);
-    setGuesses([...guesses, { guess, feedback }]);
+    setGuesses((prev) => [...prev, { guess, feedback }]);
     setUserChoices([]);
 
     if (feedback.every((f) => f === "green")) {
@@ -135,12 +141,7 @@ export default function MastermindApp() {
       setLives(newLives);
       if (newLives === 0) {
         setLost(true);
-        swal({
-          title: "Out of guesses!",
-          text: "Better luck tomorrow.",
-          icon: "error",
-          button: "OK",
-        });
+        swal({ title: "Out of guesses!", text: "Better luck tomorrow.", icon: "error", button: "OK" });
       }
     }
   }
@@ -150,108 +151,132 @@ export default function MastermindApp() {
   return (
     <div className="app">
       <header className="game-header">
-        <h1 className="game-title">Cipher</h1>
+        <div className="title-row">
+          <h1 className="game-title">CIPHER</h1>
+          <button
+            className="help-btn"
+            onClick={() => setShowInstructions((v) => !v)}
+            aria-label="How to play"
+          >
+            ?
+          </button>
+        </div>
         <p className="game-subtitle">Daily Code-Breaking Puzzle</p>
-        <button
-          className="instructions-toggle"
-          onClick={() => setShowInstructions(!showInstructions)}
-        >
-          {showInstructions ? "Hide Rules" : "How to Play"}
-        </button>
       </header>
 
       {showInstructions && (
         <div className="instructions">
-          <p>Guess the hidden 4-colour code in {MAX_LIVES} tries.</p>
-          <p>
-            <span className="green-text">✔ Green</span> — correct colour, correct position
-          </p>
-          <p>
-            <span className="orange-text">❗ Orange</span> — correct colour, wrong position
-          </p>
-          <p>Colours can repeat. A new puzzle drops every day at midnight.</p>
+          <p>Guess the hidden 4-colour code in <strong>{MAX_LIVES}</strong> attempts.</p>
+          <div className="legend">
+            <div className="legend-item">
+              <div className="peg peg-sm fb-green" />
+              <span>Right colour, right position</span>
+            </div>
+            <div className="legend-item">
+              <div className="peg peg-sm fb-orange" />
+              <span>Right colour, wrong position</span>
+            </div>
+            <div className="legend-item">
+              <div className="peg peg-sm fb-miss" />
+              <span>Not in the code</span>
+            </div>
+          </div>
+          <p className="instructions-note">Colours can repeat. New puzzle every day at midnight.</p>
         </div>
       )}
 
       {!gameOver && (
-        <div className="lives-display">
+        <div className="lives-row">
           {Array.from({ length: MAX_LIVES }, (_, i) => (
-            <span key={i} className={`life-dot ${i < lives ? "life-active" : "life-lost"}`} />
+            <span
+              key={i}
+              className={`life-pip ${i < lives ? "life-on" : "life-off"}`}
+            />
           ))}
-          <span className="lives-text">
-            {lives} guess{lives !== 1 ? "es" : ""} remaining
-          </span>
+          <span className="lives-label">{lives} left</span>
         </div>
       )}
 
-      <table>
-        <thead>
-          <tr>
-            <th>#</th>
-            <th>Guess</th>
-            <th>Feedback</th>
-          </tr>
-        </thead>
-        <tbody>
-          {guesses.map(({ guess, feedback }, i) => (
-            <tr key={i}>
-              <td>{i + 1}</td>
-              <td className="guess-cell">
-                {guess.map((color, j) => (
-                  <div key={j} className={`color-circle ${color.color}`} />
+      <div className="game-board">
+        {guesses.map(({ guess, feedback }, i) => (
+          <div key={i} className="guess-row">
+            <span className="row-num">{i + 1}</span>
+            <div className="guess-pegs">
+              {guess.map((c, j) => (
+                <div key={j} className={`peg peg-lg ${c.color}`} />
+              ))}
+            </div>
+            <div className="feedback-grid">
+              {feedback.map((f, j) => (
+                <div
+                  key={j}
+                  className={`peg peg-sm ${
+                    f === "green" ? "fb-green" : f === "orange" ? "fb-orange" : "fb-miss"
+                  }`}
+                />
+              ))}
+            </div>
+          </div>
+        ))}
+
+        {!gameOver && (
+          <div className="guess-row guess-row-active">
+            <span className="row-num">{guesses.length + 1}</span>
+            <div className="guess-pegs">
+              {Array(4)
+                .fill(null)
+                .map((_, i) => (
+                  <div
+                    key={i}
+                    className={`peg peg-lg ${
+                      userChoices[i] ? userChoices[i].color : "peg-empty"
+                    }`}
+                  />
                 ))}
-              </td>
-              <td className="feedback-cell">
-                {feedback.map((f, j) => (
-                  <span key={j} className={`feedback-icon ${f}`}>
-                    {f === "green" ? "✔" : f === "orange" ? "❗" : "·"}
-                  </span>
+            </div>
+            <div className="feedback-grid">
+              {Array(4)
+                .fill(null)
+                .map((_, i) => (
+                  <div key={i} className="peg peg-sm fb-miss" />
                 ))}
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+            </div>
+          </div>
+        )}
+      </div>
 
       {!gameOver && (
-        <>
-          <div className="selected-colors-container">
-            {userChoices.map((choice) => (
-              <div key={choice.id} className={`color-circle ${choice.color}`} />
-            ))}
-            {Array.from({ length: 4 - userChoices.length }, (_, i) => (
-              <div key={`empty-${i}`} className="color-circle color-empty" />
-            ))}
-          </div>
-
-          <div className="color-selector">
+        <div className="controls-area">
+          <div className="color-picker">
             {COLORS.map((color) => (
-              <button key={color} onClick={() => handleColorClick(color)} aria-label={color}>
-                <div className={`color-circle ${color}`} />
-              </button>
+              <button
+                key={color}
+                className={`picker-btn ${color}`}
+                onClick={() => handleColorClick(color)}
+                aria-label={color}
+              />
             ))}
           </div>
-
-          <div className="guess-section">
+          <div className="action-buttons">
             <button
-              className="btn-one"
+              className="btn-action"
               onClick={handleBack}
               disabled={userChoices.length === 0}
             >
-              <span>Back</span>
+              ← Back
             </button>
             <button
-              className="btn-one"
+              className="btn-action btn-submit"
               onClick={handleSubmit}
               disabled={userChoices.length < 4}
             >
-              <span>Submit</span>
+              Submit
             </button>
           </div>
-        </>
+        </div>
       )}
 
-      <Alert win={win} lost={lost} timeLeft={timeLeft} />
+      <Alert win={win} lost={lost} timeLeft={timeLeft} winningCode={winningCode} />
     </div>
   );
 }
